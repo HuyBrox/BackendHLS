@@ -12,28 +12,16 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-// Endpoint kiểm tra kết nối server
-app.get("/", (req, res) => {
-    return res.status(200).json({
-        message: "Kết nối thành công tới server",
-        success: true,
-    });
-});
-
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
-
-await connectDB();
 // Cấu hình CORS
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://hls-sand.vercel.app'],
+    origin: ['https://hls-sand.vercel.app', 'https://hls-huy-s-projects-492df757.vercel.app'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 };
+
 app.use(cors(corsOptions));
+
 // Middleware cho headers CORS tùy chỉnh
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'https://hls-sand.vercel.app');
@@ -51,11 +39,26 @@ app.options('*', (req, res) => {
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.send();
 });
+
+// Endpoint kiểm tra kết nối server
+app.get("/", (req, res) => {
+    return res.status(200).json({
+        message: "Kết nối thành công tới server",
+        success: true,
+    });
+});
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+app.use(urlencoded({ extended: true }));
+
+await connectDB();
+
 // Tích hợp PeerServer vào Express
 const peerServer = ExpressPeerServer(server, {
     debug: true,       // Hiển thị thông tin debug
-    path: '/peerjs',    // Đường dẫn API PeerJS
-    allow_discovery: true, // Cho phép khám phá peer (nếu cần)
+    path: '/peerjs'    // Đường dẫn API PeerJS
 });
 
 // Middleware sử dụng PeerServer
@@ -75,6 +78,5 @@ app.use("/api", indexRouter);
 
 // Kết nối database và khởi động server
 server.listen(PORT, async () => {
-
     console.log(`Server is running on port ${PORT}`);
 });
