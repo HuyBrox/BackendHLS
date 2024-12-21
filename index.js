@@ -28,7 +28,7 @@ app.use(urlencoded({ extended: true }));
 await connectDB();
 // Cấu hình CORS
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://hls-sand.vercel.app'],
+    origin: ['http://localhost:3000', 'https://hls-sand.vercel.app'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
