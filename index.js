@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 
 // Cấu hình CORS
 const corsOptions = {
-    origin: ['https://https://hls-j3u6.onrender.com', 'https://hls-4kyfun5rm-huy-s-projects-492df757.vercel.app/login'],
+    origin: ['https://hls-sand.vercel.app', 'https://hls-4kyfun5rm-huy-s-projects-492df757.vercel.app'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
