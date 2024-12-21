@@ -5,41 +5,39 @@ import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
 import indexRouter from "./routes/index.route.js";
 import { app, server } from "./socket/socket.js";
-import { ExpressPeerServer } from "peer"; // Import PeerServer
+import { ExpressPeerServer } from "peer";
 
-// Cấu hình dotenv để sử dụng biến môi trường
 dotenv.config();
-
 const PORT = process.env.PORT || 5000;
+
+// Middleware cho parsing trước
+app.use(express.json());
+app.use(cookieParser());
+app.use(urlencoded({ extended: true }));
 
 // Cấu hình CORS
 const corsOptions = {
     origin: ['https://hls-sand.vercel.app', 'https://hls-4kyfun5rm-huy-s-projects-492df757.vercel.app'],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 };
 
 app.use(cors(corsOptions));
 
-// Middleware cho headers CORS tùy chỉnh
+// Middleware CORS tùy chỉnh
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://hls-sand.vercel.app');
+    const origin = req.headers.origin;
+    if (corsOptions.origin.includes(origin)) {
+        res.header('Access-Control-Allow-Origin', origin);
+    }
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.header('Access-Control-Expose-Headers', 'Set-Cookie');
     next();
 });
-
-// Xử lý preflight request
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', 'https://hls-sand.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.send();
-});
-
 
 await connectDB();
 
@@ -50,12 +48,6 @@ app.get("/", (req, res) => {
         success: true,
     });
 });
-
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
-
 
 
 // Tích hợp PeerServer vào Express
