@@ -8,7 +8,7 @@ import User from '../models/user.model.js';
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = ["http://hls-sand.vercel.app"];
+const allowedOrigins = ["https://hls-sand.vercel.app"];
 const io = new Server(server, {
     cors: {
         origin: (origin, callback) => {
