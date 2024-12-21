@@ -27,7 +27,7 @@ app.use(urlencoded({ extended: true }));
 
 // Cấu hình CORS
 const corsOptions = {
-    origin: ['http://localhost:3000', 'https://localhost:3001'],
+    origin: ['http://localhost:3000', 'http://frontend-hls.vercel.app'],
     credentials: true,
 };
 app.use(cors(corsOptions));
