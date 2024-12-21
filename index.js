@@ -25,13 +25,16 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 
+await connectDB();
 // Cấu hình CORS
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://hls-sand.vercel.app'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 };
 app.use(cors(corsOptions));
-await connectDB();
+
 // Tích hợp PeerServer vào Express
 const peerServer = ExpressPeerServer(server, {
     debug: true,       // Hiển thị thông tin debug
