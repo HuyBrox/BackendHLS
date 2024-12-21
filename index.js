@@ -5,39 +5,42 @@ import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
 import indexRouter from "./routes/index.route.js";
 import { app, server } from "./socket/socket.js";
-import { ExpressPeerServer } from "peer"; // Import PeerServer
+import { ExpressPeerServer } from "peer";
 
-// Cấu hình dotenv để sử dụng biến môi trường
 dotenv.config();
-
 const PORT = process.env.PORT || 5000;
 
-// Cấu hình CORS
+// Cấu hình CORS với chi tiết cho production
 const corsOptions = {
-    origin: ['https://hls-sand.vercel.app', 'https://hls-huy-s-projects-492df757.vercel.app'],
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: ['http://localhost:3000', 'https://hls-sand.vercel.app'],
     credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie', 'Authorization'],
 };
 
+// Middleware cho cookies và parsing
+app.use(cookieParser());
+app.use(express.json());
+app.use(urlencoded({ extended: true }));
 app.use(cors(corsOptions));
 
-// Middleware cho headers CORS tùy chỉnh
+// Middleware xử lý CORS cho production
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://hls-sand.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
+    const origin = req.headers.origin;
+    if (corsOptions.origin.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie');
+    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie, Authorization');
 
-// Xử lý preflight request
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', 'https://hls-sand.vercel.app');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.send();
+    // Cấu hình cookie cho cross-domain
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
 });
 
 // Endpoint kiểm tra kết nối server
@@ -48,23 +51,16 @@ app.get("/", (req, res) => {
     });
 });
 
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-app.use(urlencoded({ extended: true }));
-
 await connectDB();
 
-// Tích hợp PeerServer vào Express
 const peerServer = ExpressPeerServer(server, {
-    debug: true,       // Hiển thị thông tin debug
-    path: '/peerjs'    // Đường dẫn API PeerJS
+    debug: true,
+    path: '/peerjs',
+    allow_discovery: true,
 });
 
-// Middleware sử dụng PeerServer
-app.use('/peerjs', peerServer);  // Kích hoạt endpoint PeerJS
+app.use('/peerjs', peerServer);
 
-// Lắng nghe sự kiện peer connect và disconnect
 peerServer.on('connection', (peer) => {
     console.log('Peer connected:', peer.id);
 });
@@ -73,10 +69,8 @@ peerServer.on('disconnect', (peer) => {
     console.log('Peer disconnected:', peer.id);
 });
 
-// Sử dụng router chính
 app.use("/api", indexRouter);
 
-// Kết nối database và khởi động server
 server.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
 });
