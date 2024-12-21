@@ -199,17 +199,6 @@ export const logout = async (_, res) => {
         console.log(error);
     }
 }
-//[GET] /api/user/logout
-export const logout = async (_, res) => {
-    try {
-        return res.clearCookie("token", "", { maxAge: 0 }).json({
-            message: "Đăng xuất thành công",
-            success: true,
-        });
-    } catch (error) {
-        console.log(error);
-    }
-}
 //[GET] /api/:id
 //lấy thông tin trang cá nhân
 export const getProfile = async (req, res) => {
